@@ -2,12 +2,22 @@
   {
     "Author": "Aly",
     "Name": "AutoTimer",
-    "Punchline": "Auto-Attack Timer Bar.",
-    "Description": "Auto-Attack Timer Bar based on the Triggernometry trigger by aya liz.",
-    "InternalName": "AutoTimerPlugin",
-    "ApplicableVersion": "any",
-    "Tags": ["auto", "attack", "timer"],
+    "InternalName": "AutoTimer",
     "AssemblyVersion": "0.0.0.1",
+    "Description": "Auto-Attack Timer Bar based on the Triggernometry trigger by aya liz.",
+    "ApplicableVersion": "any",
+    "Tags": [
+      "auto",
+      "attack",
+      "timer"
+    ],
+    "DalamudApiLevel": 9,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "Punchline": "Auto-Attack Timer Bar.",
+    "AcceptsFeedback": true,
     "DownloadLinkInstall": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip",
     "DownloadLinkTesting": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip",
     "DownloadLinkUpdate": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip"
