@@ -1,0 +1,15 @@
+﻿[
+  {
+    "Author": "Aly",
+    "Name": "AutoTimer",
+    "Punchline": "Auto-Attack Timer Bar.",
+    "Description": "Auto-Attack Timer Bar based on the Triggernometry trigger by aya liz.",
+    "InternalName": "AutoTimerPlugin",
+    "ApplicableVersion": "any",
+    "Tags": ["auto", "attack", "timer"],
+    "AssemblyVersion": "0.0.0.1",
+    "DownloadLinkInstall": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip",
+    "DownloadLinkTesting": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/s5bug/AutoTimer/releases/download/v0.1.0/latest.zip"
+  }
+]
