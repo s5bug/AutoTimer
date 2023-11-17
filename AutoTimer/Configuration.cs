@@ -10,6 +10,7 @@ public class Configuration : IPluginConfiguration {
 
     public bool UseMonkGauge { get; set; } = true;
     public bool LockBar { get; set; } = true;
+    public bool BarOpen { get; set; } = false;
 
     // the below exist just to make saving less cumbersome
     [NonSerialized]

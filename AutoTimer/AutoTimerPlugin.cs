@@ -12,7 +12,8 @@ namespace AutoTimer;
 
 public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     public string Name => "Auto Timer";
-    private const string CommandName = "/autotimer";
+    private const string ToggleTimerCommand = "/autotimer";
+    private const string ConfigTimerCommand = "/autotimerconfig";
 
     private DalamudPluginInterface PluginInterface { get; init; }
     private ICommandManager CommandManager { get; init; }
@@ -65,14 +66,17 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
-        this.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) {
-            HelpMessage = "A useful message to display in /xlhelp"
+        this.CommandManager.AddHandler(ToggleTimerCommand, new CommandInfo(this.OnCommand) {
+            HelpMessage = "Toggles the autotimer bar"
+        });
+        this.CommandManager.AddHandler(ConfigTimerCommand, new CommandInfo(this.OnCommand) {
+            HelpMessage = "Toggles the autotimer configuration window"
         });
 
         this.PluginInterface.UiBuilder.Draw += DrawUI;
         this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
-        this.MainWindow.IsOpen = true;
+        this.MainWindow.IsOpen = this.Configuration.BarOpen;
     }
 
     public void Dispose() {
@@ -82,12 +86,21 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         MainWindow.Dispose();
         this.Hooks.Dispose();
 
-        this.CommandManager.RemoveHandler(CommandName);
+        this.CommandManager.RemoveHandler(ToggleTimerCommand);
     }
 
     private void OnCommand(string command, string args) {
-        // in response to the slash command, just display our main ui
-        MainWindow.IsOpen = true;
+        switch (command) {
+            case "/autotimer":
+                this.MainWindow.IsOpen = !this.MainWindow.IsOpen;
+                this.Configuration.BarOpen = this.MainWindow.IsOpen;
+                this.Configuration.Save();
+                break;
+            case "/autotimerconfig":
+                this.ConfigWindow.IsOpen = true;
+                this.ConfigWindow.BringToFront();
+                break;
+        }
     }
 
     private void DrawUI() {
