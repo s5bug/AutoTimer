@@ -1,0 +1,13 @@
+{
+  "Author": "Aly",
+  "Name": "AutoTimer",
+  "Punchline": "Auto-Attack Timer Bar.",
+  "Description": "Auto-Attack Timer Bar based on the Triggernometry trigger by aya liz.",
+  "InternalName": "autoTimer",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "auto",
+    "attack",
+    "timer"
+  ]
+}
