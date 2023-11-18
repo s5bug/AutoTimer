@@ -14,12 +14,14 @@ public class MainWindow : Window, IDisposable {
     private IDalamudTextureWrap GaugeImage;
     private IDalamudTextureWrap GaugeMonkImage;
     private IDalamudTextureWrap ProgressImage;
+    private IDalamudTextureWrap TcjProgressImage;
 
     public MainWindow(
         AutoTimerPlugin plugin,
         IDalamudTextureWrap gauge,
         IDalamudTextureWrap gaugeMonk,
-        IDalamudTextureWrap progress
+        IDalamudTextureWrap progress,
+        IDalamudTextureWrap tcjProgress
     ) : base(
         "AutoTimer", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground) {
         this.SizeConstraints = new WindowSizeConstraints {
@@ -32,6 +34,7 @@ public class MainWindow : Window, IDisposable {
         this.GaugeImage = gauge;
         this.GaugeMonkImage = gaugeMonk;
         this.ProgressImage = progress;
+        this.TcjProgressImage = tcjProgress;
     }
 
     public void Dispose() {
@@ -47,6 +50,8 @@ public class MainWindow : Window, IDisposable {
         }
     }
 
+    private TimeSpan? FirstTcjTick;
+    
     public override void Draw() {
         var tsla = this.Plugin.HooksListener.TimeSinceLastAuto();
         
@@ -63,6 +68,12 @@ public class MainWindow : Window, IDisposable {
         if (td is { } autoAttackDelay) {
             double progress = Math.Min(1.0, tsla.Divide(autoAttackDelay));
             
+            if (progress >= 1.0) {
+                if (this.Plugin.HooksListener.HasTcjBuff()) {
+                    this.Plugin.HooksListener.TcjStart = tsla;
+                }
+            }
+            
             ImGui.SetCursorPos(new Vector2(2, 2));
             if (this.Plugin.Configuration.UseMonkGauge) {
                 ImGui.Image(this.GaugeMonkImage.ImGuiHandle,
@@ -74,7 +85,37 @@ public class MainWindow : Window, IDisposable {
             }
 
             ImGui.SetCursorPos(new Vector2(2, 2));
-            ImGui.Image(this.ProgressImage.ImGuiHandle, new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), new Vector2(0, 0), new Vector2((float) progress, 1));
+            ImGui.Image(
+                this.ProgressImage.ImGuiHandle, 
+                new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
+                new Vector2(0, 0), new Vector2((float) progress, 1));
+            
+            
+            if (this.Plugin.HooksListener.TcjStart is { } tcjStart) {
+                // Round towards 0
+                TimeSpan nextPossibleAuto = TimeSpan.FromSeconds((tsla + TimeSpan.FromMilliseconds(750)).Seconds) +
+                                            TimeSpan.FromMilliseconds(250);
+
+                double tickLength = 1.0;
+                // if (this.FirstTcjTick is null || nextPossibleAuto == this.FirstTcjTick) {
+                //     tickLength = 0.25;
+                //     this.FirstTcjTick = nextPossibleAuto;
+                // }
+                // else {
+                //     tickLength = 1.0;
+                // }
+                
+                double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextPossibleAuto - tsla).TotalSeconds / tickLength));
+                
+                ImGui.SetCursorPos(new Vector2(2, 2));
+                ImGui.Image(
+                    this.TcjProgressImage.ImGuiHandle,
+                    new Vector2(this.TcjProgressImage.Width * (float) tcjTickProgress, this.TcjProgressImage.Height),
+                    new Vector2(0, 0), new Vector2((float) tcjTickProgress, 1));
+            }
+            else {
+                this.FirstTcjTick = null;
+            }
         }
         
 

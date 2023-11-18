@@ -62,9 +62,13 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         var progressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
         var progressImage = this.PluginInterface.UiBuilder.LoadImage(progressPath);
+        
+        var tcjProgressPath =
+            Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "tcj_progress.png");
+        var tcjProgressImage = this.PluginInterface.UiBuilder.LoadImage(tcjProgressPath);
 
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, gaugeImage, gaugeMonkImage, progressImage);
+        MainWindow = new MainWindow(this, gaugeImage, gaugeMonkImage, progressImage, tcjProgressImage);
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
