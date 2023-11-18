@@ -27,14 +27,12 @@ public class AutoCalculator {
         this.DataManager = dataManager;
 
         this.Lv1ActionCache = new();
-        var log = new ModuleLog("AutoCalculator");
         // TODO look into ClassJobActionSort
         foreach (Action a in this.DataManager.GetExcelSheet<Action>()) {
             if (a.ClassJobLevel == 1) {
                 var actionId = a.RowId;
                 var classId = a.ClassJob.Row;
                 this.Lv1ActionCache[classId] = actionId;
-                log.Information($"Lv1ActionCache[{classId}] = {actionId}");
             }
         }
     }
@@ -87,7 +85,7 @@ public class AutoCalculator {
     }
 
     public uint? GetLv1Action() {
-        ClassJob? here = this.ClientState.LocalPlayer.ClassJob.GameData;
+        ClassJob? here = this.ClientState.LocalPlayer?.ClassJob.GameData;
 
         // Only allow single links like MNK -> PUG to prevent infinite loops
         uint steps = 0;

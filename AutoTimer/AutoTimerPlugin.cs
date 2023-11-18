@@ -34,7 +34,8 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         [RequiredVersion("1.0")] ISigScanner sigScanner,
         [RequiredVersion("1.0")] IGameInteropProvider gameInteropProvider,
         [RequiredVersion("1.0")] IClientState clientState,
-        [RequiredVersion("1.0")] IDataManager dataManager
+        [RequiredVersion("1.0")] IDataManager dataManager,
+        [RequiredVersion("1.0")] IFramework framework
     ) {
         this.PluginInterface = pluginInterface;
         this.CommandManager = commandManager;
@@ -45,6 +46,8 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         this.HooksListener = new AutoTimerHooksListener(clientState);
         this.Hooks = new Hooks(this.HooksListener, sigScanner, gameInteropProvider);
         this.Hooks.Enable();
+
+        framework.Update += this.HooksListener.FrameworkUpdate;
 
         this.AutoCalculator = new AutoCalculator(clientState, dataManager);
 
@@ -110,4 +113,6 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     public void DrawConfigUI() {
         ConfigWindow.IsOpen = true;
     }
+    
+    
 }

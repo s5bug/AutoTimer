@@ -8,8 +8,6 @@ namespace AutoTimer;
 
 public class AutoTimerHooksListener : HooksListener {
     public static readonly uint AutoAttackActionId = 7;
-    
-    private ModuleLog ModuleLog { get; init; } = new("AutoTimer");
     private Stopwatch AutoStopwatch { get; init; } = new();
     private IClientState ClientState { get; init; }
 
@@ -29,6 +27,17 @@ public class AutoTimerHooksListener : HooksListener {
 
     public TimeSpan TimeSinceLastAuto() {
         return this.AutoStopwatch.Elapsed;
+    }
+
+    public void FrameworkUpdate(IFramework framework) {
+        if (this.ClientState.LocalPlayer is { } localPlayer) {
+            if (localPlayer.IsCasting && localPlayer.CurrentCastTime < (localPlayer.TotalCastTime - 0.5)) {
+                this.AutoStopwatch.Stop();
+            }
+            else {
+                this.AutoStopwatch.Start();
+            }
+        }
     }
     
 }
