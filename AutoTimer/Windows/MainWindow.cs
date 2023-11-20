@@ -73,6 +73,7 @@ public class MainWindow : Window, IDisposable {
     }
 
     private TimeSpan? tcjEndPrediction = null;
+    private bool tcjTicked = false;
     
     public override void Draw() {
         var tsla = this.plugin.HooksListener.TimeSinceLastAuto();
@@ -103,15 +104,22 @@ public class MainWindow : Window, IDisposable {
             };
             ImGui.Image(gaugeImage.ImGuiHandle,
                         new Vector2(gaugeImage.Width, gaugeImage.Height));
-            
-            
+
+
+            var hasTcjBuff = this.plugin.HooksListener.HasTcjBuff();
             // If we're past our TCJ ending prediction and no longer have TCJ, reset tcjStart
-            if (this.tcjEndPrediction is { } tcjep && tsla > tcjep &&
-                !this.plugin.HooksListener.HasTcjBuff()) {
+            var pastEp = this.tcjEndPrediction is { } tcjep && tsla > tcjep && !hasTcjBuff;
+            // If we haven't ticked TCJ yet and no longer have TCJ, reset tcjStart
+            var earlyDisengage = !this.tcjTicked && !hasTcjBuff;
+            if (pastEp || earlyDisengage) {
                 this.plugin.HooksListener.TcjStart = null;
             }
             
             if (this.plugin.HooksListener.TcjStart is { } tcjStart) {
+                if (tsla > autoAttackDelay) {
+                    this.tcjTicked = true;
+                }
+                
                 // Possible times for the next auto are 0.25, 1.25, 2.25, etc
                 // Without Predictive TCJ, find the next auto after now (tsla)
                 //   nextAuto = floorSeconds(max(tsla, autoDelay) + 0.75s) + 0.25s
@@ -160,7 +168,9 @@ public class MainWindow : Window, IDisposable {
                     new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
                     new Vector2(0, 0), new Vector2((float) progress, 1));
 
+                // If we've auto-attacked we're no longer in TCJ
                 this.tcjEndPrediction = null;
+                this.tcjTicked = false;
             }
         }
         
