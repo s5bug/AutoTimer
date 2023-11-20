@@ -55,9 +55,14 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         var gaugePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge.png");
         var gaugeImage = this.PluginInterface.UiBuilder.LoadImage(gaugePath);
 
+        // TODO I need to make loading these images not completely terrible
         var gaugeMonkPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_monk.png");
         var gaugeMonkImage = this.PluginInterface.UiBuilder.LoadImage(gaugeMonkPath);
+        
+        var gaugeNinjaPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
+                                         "autoattack_gauge_ninja.png");
+        var gaugeNinjaImage = this.PluginInterface.UiBuilder.LoadImage(gaugeNinjaPath);
 
         var progressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
@@ -68,7 +73,15 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         var tcjProgressImage = this.PluginInterface.UiBuilder.LoadImage(tcjProgressPath);
 
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, gaugeImage, gaugeMonkImage, progressImage, tcjProgressImage);
+        MainWindow = new MainWindow(
+            this,
+            clientState,
+            gaugeImage,
+            gaugeMonkImage,
+            gaugeNinjaImage,
+            progressImage,
+            tcjProgressImage
+            );
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);

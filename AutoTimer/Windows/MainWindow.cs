@@ -3,23 +3,32 @@ using System.Numerics;
 using AutoTimer.Game;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
+using Dalamud.Logging.Internal;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 
 namespace AutoTimer.Windows;
 
 public class MainWindow : Window, IDisposable {
-    private AutoTimerPlugin Plugin;
+    public const uint MonkClassJobId = 20;
+    public const uint NinjaClassJobId = 30;
+    
+    private AutoTimerPlugin plugin;
+    private IClientState clientState;
 
     private IDalamudTextureWrap GaugeImage;
     private IDalamudTextureWrap GaugeMonkImage;
+    private IDalamudTextureWrap GaugeNinjaImage;
     private IDalamudTextureWrap ProgressImage;
     private IDalamudTextureWrap TcjProgressImage;
 
     public MainWindow(
         AutoTimerPlugin plugin,
+        IClientState clientState,
         IDalamudTextureWrap gauge,
         IDalamudTextureWrap gaugeMonk,
+        IDalamudTextureWrap gaugeNinja,
         IDalamudTextureWrap progress,
         IDalamudTextureWrap tcjProgress
     ) : base(
@@ -29,12 +38,25 @@ public class MainWindow : Window, IDisposable {
             MaximumSize = new Vector2(160, 35)
         };
 
-        this.Plugin = plugin;
+        this.plugin = plugin;
+        this.clientState = clientState;
 
         this.GaugeImage = gauge;
         this.GaugeMonkImage = gaugeMonk;
+        this.GaugeNinjaImage = gaugeNinja;
         this.ProgressImage = progress;
         this.TcjProgressImage = tcjProgress;
+    }
+
+    private IDalamudTextureWrap JobDependentGaugeImage() {
+        if (this.clientState.LocalPlayer is { } localPlayer) {
+            return localPlayer.ClassJob.Id switch {
+                MonkClassJobId => this.GaugeMonkImage,
+                NinjaClassJobId => this.GaugeNinjaImage,
+                _ => this.GaugeImage
+            };
+        }
+        return this.GaugeImage;
     }
 
     public void Dispose() {
@@ -42,7 +64,7 @@ public class MainWindow : Window, IDisposable {
     }
 
     public override void Update() {
-        if (this.Plugin.Configuration.LockBar) {
+        if (this.plugin.Configuration.LockBar) {
             this.Flags |= ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground;
         }
         else {
@@ -53,7 +75,7 @@ public class MainWindow : Window, IDisposable {
     private TimeSpan? FirstTcjTick;
     
     public override void Draw() {
-        var tsla = this.Plugin.HooksListener.TimeSinceLastAuto();
+        var tsla = this.plugin.HooksListener.TimeSinceLastAuto();
         
         // ImGui.Text($"Time since last auto: {tsla}");
         // ImGui.Text($"Lv1 Action: {this.Plugin.AutoCalculator.GetLv1Action()}");
@@ -64,48 +86,59 @@ public class MainWindow : Window, IDisposable {
         // ImGui.Text($"Base Weapon Delay: {this.Plugin.AutoCalculator.GetWeaponDelay()}");
         // ImGui.Text($"Total Delay: {this.Plugin.AutoCalculator.GetAutoAttackDelay()}");
 
-        var td = this.Plugin.AutoCalculator.GetAutoAttackDelay();
+        var td = this.plugin.AutoCalculator.GetAutoAttackDelay();
         if (td is { } autoAttackDelay) {
             double progress = Math.Min(1.0, tsla.Divide(autoAttackDelay));
             
-            if (progress >= 1.0) {
-                if (this.Plugin.HooksListener.HasTcjBuff()) {
-                    this.Plugin.HooksListener.TcjStart = tsla;
+            if (this.plugin.HooksListener.HasTcjBuff() && this.plugin.HooksListener.TcjStart is null) {
+                this.plugin.HooksListener.TcjStart = tsla;
+            }
+            
+            ImGui.SetCursorPos(new Vector2(2, 2));
+            var gaugeImage = this.plugin.Configuration.BarTypeChoice switch {
+                Configuration.BarType.AlwaysPlain => this.GaugeImage,
+                Configuration.BarType.AlwaysMonk => this.GaugeMonkImage,
+                Configuration.BarType.AlwaysNinja => this.GaugeNinjaImage,
+                Configuration.BarType.JobDependent => JobDependentGaugeImage()
+            };
+            ImGui.Image(gaugeImage.ImGuiHandle,
+                        new Vector2(gaugeImage.Width, gaugeImage.Height));
+            
+            
+            if (this.plugin.HooksListener.TcjStart is { } tcjStart) {
+                // Possible times for the next auto are 0.25, 1.25, 2.25, etc
+                // Without Predictive TCJ, find the next auto after now (tsla)
+                //   nextAuto = floorSeconds(max(tsla, autoDelay) + 0.75s) + 0.25s
+                //   As soon as TCJ is entered:
+                //     The TCJ bar should be empty until (tsla > autoDelay)
+                //     Progress should be progress through 1s tick (progress between N.25 and (N+1).25) 
+                // Predictive TCJ restricts the next autos to the ones that happen 2.85s after TCJ is entered
+                //   Calculate tcjEnd as tcjStart + 2.85s
+                //   Calculate tcjEndAuto as floorSeconds(tcjEnd + 0.75s) + 0.25s
+                //   tickLength = tsla > tcjEndAuto ? 1.0 : tcjEndAuto - tcjStart
+                //   nextAuto = tsla > tcjEndAuto ? predictiveTcj : tcjEndAuto
+                //   As soon as TCJ is entered:
+                //     The TCJ bar should start filling up immediately
+                //     Progress should be progress until nextAuto
+
+                TimeSpan nextAuto;
+                double tickLength;
+
+                TimeSpan tcjEnd = tcjStart + TimeSpan.FromSeconds(2.85);
+                TimeSpan tcjEndAuto = TimeSpan.FromSeconds((tcjEnd + TimeSpan.FromSeconds(0.75)).Seconds) +
+                                      TimeSpan.FromSeconds(0.25);
+                if (this.plugin.Configuration.PredictiveTcj && tsla < tcjEndAuto) {
+                    tickLength = (tcjEndAuto - tcjStart).TotalSeconds;
+                    nextAuto = tcjEndAuto;
                 }
-            }
-            
-            ImGui.SetCursorPos(new Vector2(2, 2));
-            if (this.Plugin.Configuration.UseMonkGauge) {
-                ImGui.Image(this.GaugeMonkImage.ImGuiHandle,
-                            new Vector2(this.GaugeMonkImage.Width, this.GaugeMonkImage.Height));
-            }
-            else {
-                ImGui.Image(this.GaugeImage.ImGuiHandle,
-                            new Vector2(this.GaugeImage.Width, this.GaugeImage.Height));
-            }
-
-            ImGui.SetCursorPos(new Vector2(2, 2));
-            ImGui.Image(
-                this.ProgressImage.ImGuiHandle, 
-                new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
-                new Vector2(0, 0), new Vector2((float) progress, 1));
-            
-            
-            if (this.Plugin.HooksListener.TcjStart is { } tcjStart) {
-                // Round towards 0
-                TimeSpan nextPossibleAuto = TimeSpan.FromSeconds((tsla + TimeSpan.FromMilliseconds(750)).Seconds) +
-                                            TimeSpan.FromMilliseconds(250);
-
-                double tickLength = 1.0;
-                // if (this.FirstTcjTick is null || nextPossibleAuto == this.FirstTcjTick) {
-                //     tickLength = 0.25;
-                //     this.FirstTcjTick = nextPossibleAuto;
-                // }
-                // else {
-                //     tickLength = 1.0;
-                // }
+                else {
+                    var minDelay = tsla > autoAttackDelay ? tsla : autoAttackDelay;
+                    tickLength = tsla > autoAttackDelay ? 1.0 : autoAttackDelay.TotalSeconds;
+                    nextAuto = TimeSpan.FromSeconds((minDelay + TimeSpan.FromSeconds(0.75)).Seconds) +
+                               TimeSpan.FromSeconds(0.25);
+                }
                 
-                double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextPossibleAuto - tsla).TotalSeconds / tickLength));
+                double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextAuto - tsla).TotalSeconds / tickLength));
                 
                 ImGui.SetCursorPos(new Vector2(2, 2));
                 ImGui.Image(
@@ -114,6 +147,12 @@ public class MainWindow : Window, IDisposable {
                     new Vector2(0, 0), new Vector2((float) tcjTickProgress, 1));
             }
             else {
+                ImGui.SetCursorPos(new Vector2(2, 2));
+                ImGui.Image(
+                    this.ProgressImage.ImGuiHandle, 
+                    new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
+                    new Vector2(0, 0), new Vector2((float) progress, 1));
+                
                 this.FirstTcjTick = null;
             }
         }

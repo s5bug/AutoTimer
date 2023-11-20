@@ -8,7 +8,24 @@ namespace AutoTimer;
 public class Configuration : IPluginConfiguration {
     public int Version { get; set; } = 0;
 
-    public bool UseMonkGauge { get; set; } = true;
+    public enum BarType {
+        AlwaysPlain,
+        AlwaysMonk,
+        AlwaysNinja,
+        JobDependent
+    }
+
+    public static string BarTypeName(BarType barType) {
+        return barType switch {
+            BarType.AlwaysPlain => "Always Plain",
+            BarType.AlwaysMonk => "Always Monk",
+            BarType.AlwaysNinja => "Always Ninja",
+            BarType.JobDependent => "Job Dependent"
+        };
+    }
+
+    public BarType BarTypeChoice { get; set; } = BarType.AlwaysPlain;
+    public bool PredictiveTcj { get; set; } = true;
     public bool LockBar { get; set; } = true;
     public bool BarOpen { get; set; } = false;
 
