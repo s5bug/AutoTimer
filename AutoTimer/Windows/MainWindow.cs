@@ -72,7 +72,7 @@ public class MainWindow : Window, IDisposable {
         }
     }
 
-    private TimeSpan? FirstTcjTick;
+    private TimeSpan? tcjEndPrediction = null;
     
     public override void Draw() {
         var tsla = this.plugin.HooksListener.TimeSinceLastAuto();
@@ -104,6 +104,12 @@ public class MainWindow : Window, IDisposable {
             ImGui.Image(gaugeImage.ImGuiHandle,
                         new Vector2(gaugeImage.Width, gaugeImage.Height));
             
+            
+            // If we're past our TCJ ending prediction and no longer have TCJ, reset tcjStart
+            if (this.tcjEndPrediction is { } tcjep && tsla > tcjep &&
+                !this.plugin.HooksListener.HasTcjBuff()) {
+                this.plugin.HooksListener.TcjStart = null;
+            }
             
             if (this.plugin.HooksListener.TcjStart is { } tcjStart) {
                 // Possible times for the next auto are 0.25, 1.25, 2.25, etc
@@ -137,6 +143,7 @@ public class MainWindow : Window, IDisposable {
                     nextAuto = TimeSpan.FromSeconds((minDelay + TimeSpan.FromSeconds(0.75)).Seconds) +
                                TimeSpan.FromSeconds(0.25);
                 }
+                this.tcjEndPrediction = nextAuto;
                 
                 double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextAuto - tsla).TotalSeconds / tickLength));
                 
@@ -152,8 +159,8 @@ public class MainWindow : Window, IDisposable {
                     this.ProgressImage.ImGuiHandle, 
                     new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
                     new Vector2(0, 0), new Vector2((float) progress, 1));
-                
-                this.FirstTcjTick = null;
+
+                this.tcjEndPrediction = null;
             }
         }
         

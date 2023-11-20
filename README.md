@@ -4,8 +4,10 @@ Based on the Triggernometry trigger by aya liz.
 
 `/autotimer` to display the Auto Timer bar.
 
-The config has options to toggle whether the bar is locked in place / responds to mouse inputs as well as whether or not
-to display a special background texture for Monk Riddle of Wind optimization.
+`/autotimerconfig` to open the configuration window:
+- Bar Type: Controls whether hints for optimal timing are shown on the bar. Green is best, empty is OK, red is worst.
+- Predictive TCJ: Controls whether or not the bar delays to a standard 2.85s Ten-Chi-Jin.
+- Lock Bar: Controls whether or not the bar can be repositioned / interacted with.
 
 ## Plugin Repository
 
