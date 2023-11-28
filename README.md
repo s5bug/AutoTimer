@@ -20,10 +20,11 @@ The background texture for the Ninja bar assumes a late-weave TCJ, with 2.85s be
 
 ## Plugin Repository
 
-**This repository is not reviewed by the Dalamud team and should be considered unstable (cause game crashes, etc.) and
-unsafe (compromise your computer, perform unintended actions, etc.).** It is better to install this plugin from the
-Dalamud Testing repository (activated in Dalamud Settings). Once this plugin is in the official plugin repository, this
-README will be updated and the custom repository will be fully removed in favor of Dalamud Testing builds.
+**This repository is not actively reviewed by the Dalamud team and should be considered unstable (cause game crashes,
+etc.) and  unsafe (compromise your computer, perform unintended actions, etc.).** It is better to install this plugin
+from the Dalamud Testing repository (activated in Dalamud Settings). Once this plugin is in the official plugin
+repository, this  README will be updated and the custom repository will be fully removed in favor of Dalamud Testing
+builds.
 
 Adding the custom repository `https://raw.githubusercontent.com/s5bug/AutoTimer/main/repo.json` will allow you to search
 for `AutoTimer`.
