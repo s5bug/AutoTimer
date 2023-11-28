@@ -12,11 +12,14 @@ using Action = Lumina.Excel.GeneratedSheets.Action;
 namespace AutoTimer.Game;
 
 public class AutoCalculator {
-    public static readonly int SkillspeedAttributeId = 45;
-    public static readonly int SpellspeedAttributeId = 46;
+    public const int WeaponskillActionCategoryId = 3;
+    public const int SpellActionCategoryId = 2;
 
-    public static readonly uint RiddleOfWindId = 2687;
-    
+    public const int SkillspeedAttributeId = 45;
+    public const int SpellspeedAttributeId = 46;
+
+    public const uint RiddleOfWindId = 2687;
+
     private IClientState ClientState { get; init; }
     private IDataManager DataManager { get; init; }
 
@@ -65,10 +68,11 @@ public class AutoCalculator {
 
             byte level = this.ClientState.LocalPlayer.Level;
 
-            int speedStat = actionData.ActionCategory.Value.Name.ToString() switch {
+            int speedStat = actionData.ActionCategory.Row switch {
                 // See CharacterPanelRefined Attributes
-                "Weaponskill" => GetAttribute(SkillspeedAttributeId),
-                "Spell" => GetAttribute(SpellspeedAttributeId)
+                WeaponskillActionCategoryId => GetAttribute(SkillspeedAttributeId),
+                SpellActionCategoryId => GetAttribute(SpellspeedAttributeId)
+                // `_ => return null` isn't valid in C# so I guess I'll just let an exception bubble up here
             };
             int baseSpeed = this.DataManager.GetExcelSheet<ParamGrow>().GetRow(level).BaseSpeed;
             int extraSpeed = speedStat - baseSpeed;
