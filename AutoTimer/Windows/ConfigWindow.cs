@@ -36,6 +36,11 @@ public class ConfigWindow : Window, IDisposable {
             }
             ImGui.EndCombo();
         }
+        ImGuiComponents.HelpMarker(
+            "The Ninja background assumes a 2.85s Ten-Chi-Jin duration, which is a late-woven Ten-Chi-Jin at a " +
+            "2.12 Huton GCD. The true duration (and optimality) of a full Ten-Chi-Jin where Mudras are executed on " +
+            "cooldown depends both on GCD speed and the time at which Ten-Chi-Jin begins before the first Mudra, so the " +
+            "bar may not be correct for Ten-Chi-Jin durations significantly differing from the 2.85s assumed duration.");
 
         var configValue = this.Configuration.PredictiveTcj;
         if (ImGui.Checkbox("Predictive TCJ", ref configValue)) {
