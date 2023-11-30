@@ -11,11 +11,8 @@ public class ConfigWindow : Window, IDisposable {
 
     public ConfigWindow(AutoTimerPlugin plugin) : base(
         "AutoTimer Configuration",
-        ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
+        ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse) {
-        this.Size = new Vector2(232, 150);
-        this.SizeCondition = ImGuiCond.Always;
-
         this.Configuration = plugin.Configuration;
     }
 

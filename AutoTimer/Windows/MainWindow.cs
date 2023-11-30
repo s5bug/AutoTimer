@@ -32,12 +32,8 @@ public class MainWindow : Window, IDisposable {
         IDalamudTextureWrap progress,
         IDalamudTextureWrap tcjProgress
     ) : base(
-        "AutoTimer", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground) {
-        this.SizeConstraints = new WindowSizeConstraints {
-            MinimumSize = new Vector2(160, 35),
-            MaximumSize = new Vector2(160, 35)
-        };
-
+        "AutoTimer", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs |
+                     ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.AlwaysAutoResize) {
         this.plugin = plugin;
         this.clientState = clientState;
 
@@ -94,8 +90,8 @@ public class MainWindow : Window, IDisposable {
             if (this.plugin.HooksListener.HasTcjBuff() && this.plugin.HooksListener.TcjStart is null) {
                 this.plugin.HooksListener.TcjStart = tsla;
             }
-            
-            ImGui.SetCursorPos(new Vector2(2, 2));
+
+            Vector2 backgroundPos = ImGui.GetCursorPos();
             var gaugeImage = this.plugin.Configuration.BarTypeChoice switch {
                 Configuration.BarType.AlwaysPlain => this.GaugeImage,
                 Configuration.BarType.AlwaysMonk => this.GaugeMonkImage,
@@ -162,7 +158,7 @@ public class MainWindow : Window, IDisposable {
                     new Vector2(0, 0), new Vector2((float) tcjTickProgress, 1));
             }
             else {
-                ImGui.SetCursorPos(new Vector2(2, 2));
+                ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
                     this.ProgressImage.ImGuiHandle, 
                     new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
