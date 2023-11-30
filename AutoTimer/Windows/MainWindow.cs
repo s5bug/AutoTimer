@@ -151,7 +151,7 @@ public class MainWindow : Window, IDisposable {
                 
                 double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextAuto - tsla).TotalSeconds / tickLength));
                 
-                ImGui.SetCursorPos(new Vector2(2, 2));
+                ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
                     this.TcjProgressImage.ImGuiHandle,
                     new Vector2(this.TcjProgressImage.Width * (float) tcjTickProgress, this.TcjProgressImage.Height),
