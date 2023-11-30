@@ -43,7 +43,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         this.Configuration.Initialize(this.PluginInterface);
 
-        this.HooksListener = new AutoTimerHooksListener(clientState);
+        this.HooksListener = new AutoTimerHooksListener(clientState, dataManager);
         this.Hooks = new Hooks(this.HooksListener, sigScanner, gameInteropProvider);
         this.Hooks.Enable();
 
