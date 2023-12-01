@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using AutoTimer.Game;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Logging.Internal;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace AutoTimer;
@@ -15,16 +17,25 @@ public class AutoTimerHooksListener : HooksListener {
     private IClientState ClientState { get; init; }
     private IDataManager DataManager { get; init; }
 
+    private HashSet<uint> AutoAttackActionIds { get; init; }
+
     public AutoTimerHooksListener(IClientState clientState, IDataManager dataManager) {
         this.ClientState = clientState;
         this.DataManager = dataManager;
+
+        this.AutoAttackActionIds = new HashSet<uint>();
+        foreach (var action in this.DataManager.GetExcelSheet<Action>()) {
+            if (action.ActionCategory.Row == AutoAttackActionCategoryId) {
+                this.AutoAttackActionIds.Add(action.RowId);
+            }
+        }
     }
 
     public void HandleActionEffect1(uint actorId, ActionEffect1 actionEffect1) {
         if (actorId == this.ClientState.LocalPlayer?.ObjectId) {
             // AutoAttack Action from us
-            var actionData = this.DataManager.GetExcelSheet<Action>().GetRow(actionEffect1.Header.ActionId);
-            if (actionData.ActionCategory.Row == AutoAttackActionCategoryId) {
+            if (actionEffect1.Header.EffectDisplayType == AbilityDisplayType.ShowActionName &&
+                this.AutoAttackActionIds.Contains(actionEffect1.Header.ActionId)) {
                 // AutoAttack from us
                 this.AutoStopwatch.Restart();
                 // Which means we should also no longer be ticking Tcj
