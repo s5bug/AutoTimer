@@ -54,34 +54,39 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
 
         // you might normally want to embed resources and load them from the manifest stream
         var gaugePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge.png");
-        var gaugeImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugePath)).Result;
+        var gaugeImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(gaugePath));
 
         // TODO I need to make loading these images not completely terrible
         var gaugeMonkPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_monk.png");
-        var gaugeMonkImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugeMonkPath)).Result;
+        var gaugeMonkImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeMonkPath));
         
         var gaugeNinjaPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_ninja.png");
-        var gaugeNinjaImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugeNinjaPath)).Result;
+        var gaugeNinjaImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeNinjaPath));
 
         var progressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
-        var progressImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(progressPath)).Result;
+        var progressImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(progressPath));
         
         var tcjProgressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "tcj_progress.png");
-        var tcjProgressImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(tcjProgressPath)).Result;
+        var tcjProgressImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(tcjProgressPath));
 
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(
             this,
             clientState,
-            gaugeImage,
-            gaugeMonkImage,
-            gaugeNinjaImage,
-            progressImage,
-            tcjProgressImage
+            gaugeImage.Result,
+            gaugeMonkImage.Result,
+            gaugeNinjaImage.Result,
+            progressImage.Result,
+            tcjProgressImage.Result
             );
 
         WindowSystem.AddWindow(ConfigWindow);
