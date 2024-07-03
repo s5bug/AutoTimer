@@ -73,6 +73,7 @@ public class MainWindow : Window, IDisposable {
     private bool tcjTicked = false;
     
     public override void Draw() {
+        float fscale = (float) this.plugin.Configuration.Scale;
         var tsla = this.plugin.HooksListener.TimeSinceLastAuto();
         
         // ImGui.Text($"Time since last auto: {tsla}");
@@ -100,7 +101,7 @@ public class MainWindow : Window, IDisposable {
                 Configuration.BarType.JobDependent => JobDependentGaugeImage()
             };
             ImGui.Image(gaugeImage.ImGuiHandle,
-                        new Vector2(gaugeImage.Width, gaugeImage.Height));
+                        new Vector2(gaugeImage.Width, gaugeImage.Height) * fscale);
 
 
             var hasTcjBuff = this.plugin.HooksListener.HasTcjBuff();
@@ -155,14 +156,14 @@ public class MainWindow : Window, IDisposable {
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
                     this.TcjProgressImage.ImGuiHandle,
-                    new Vector2(this.TcjProgressImage.Width * (float) tcjTickProgress, this.TcjProgressImage.Height),
+                    new Vector2(this.TcjProgressImage.Width * (float) tcjTickProgress, this.TcjProgressImage.Height) * fscale,
                     new Vector2(0, 0), new Vector2((float) tcjTickProgress, 1));
             }
             else {
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
                     this.ProgressImage.ImGuiHandle, 
-                    new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height), 
+                    new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height) * fscale,
                     new Vector2(0, 0), new Vector2((float) progress, 1));
 
                 // If we've auto-attacked we're no longer in TCJ

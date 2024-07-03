@@ -57,5 +57,11 @@ public class ConfigWindow : Window, IDisposable {
             this.Configuration.LockBar = configValue;
             this.Configuration.Save();
         }
+
+        var scaleValue = this.Configuration.Scale;
+        if (ImGui.InputDouble("Scale", ref scaleValue)) {
+            this.Configuration.Scale = scaleValue;
+            this.Configuration.Save();
+        }
     }
 }
