@@ -19,6 +19,7 @@ public class AutoCalculator {
     public const int SpellspeedAttributeId = 46;
 
     public const uint RiddleOfWindId = 2687;
+    public const uint InspirationId = 3689;
 
     private IClientState ClientState { get; init; }
     private IDataManager DataManager { get; init; }
@@ -129,10 +130,14 @@ public class AutoCalculator {
             TimeSpan normalDelay = this.GetWeaponDelay();
             float lengthMultiplier = currentGcd / baseGcd;
             
-            // See if Riddle of Earth is applied
+            // See if Riddle of Earth is applied and apply its auto haste
+            // See if Inspiration is applied and undo its haste (a consequence of measuring Fire in Red for haste)
             foreach (Dalamud.Game.ClientState.Statuses.Status status in this.ClientState.LocalPlayer.StatusList) {
                 if (status.StatusId == RiddleOfWindId) {
                     lengthMultiplier *= 0.5f;
+                }
+                if (status.StatusId == InspirationId) {
+                    lengthMultiplier *= (float) (1.0 / 0.75);
                 }
             }
 

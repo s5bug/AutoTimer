@@ -29,6 +29,8 @@ public class Configuration : IPluginConfiguration {
     public bool LockBar { get; set; } = true;
     public bool BarOpen { get; set; } = false;
 
+    public double Scale { get; set; } = 1.0;
+
     // the below exist just to make saving less cumbersome
     [NonSerialized]
     private IDalamudPluginInterface? PluginInterface;
