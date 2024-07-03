@@ -15,7 +15,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     private const string ToggleTimerCommand = "/autotimer";
     private const string ConfigTimerCommand = "/autotimerconfig";
 
-    private DalamudPluginInterface PluginInterface { get; init; }
+    private IDalamudPluginInterface PluginInterface { get; init; }
     private ICommandManager CommandManager { get; init; }
     public Configuration Configuration { get; init; }
     public WindowSystem WindowSystem = new("AutoTimer");
@@ -29,13 +29,14 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     public AutoCalculator AutoCalculator { get; init; }
 
     public AutoTimerPlugin(
-        [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-        [RequiredVersion("1.0")] ICommandManager commandManager,
-        [RequiredVersion("1.0")] ISigScanner sigScanner,
-        [RequiredVersion("1.0")] IGameInteropProvider gameInteropProvider,
-        [RequiredVersion("1.0")] IClientState clientState,
-        [RequiredVersion("1.0")] IDataManager dataManager,
-        [RequiredVersion("1.0")] IFramework framework
+        IDalamudPluginInterface pluginInterface,
+        ICommandManager commandManager,
+        ISigScanner sigScanner,
+        IGameInteropProvider gameInteropProvider,
+        IClientState clientState,
+        IDataManager dataManager,
+        IFramework framework,
+        ITextureProvider textureProvider
     ) {
         this.PluginInterface = pluginInterface;
         this.CommandManager = commandManager;
@@ -53,24 +54,24 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
 
         // you might normally want to embed resources and load them from the manifest stream
         var gaugePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge.png");
-        var gaugeImage = this.PluginInterface.UiBuilder.LoadImage(gaugePath);
+        var gaugeImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugePath)).Result;
 
         // TODO I need to make loading these images not completely terrible
         var gaugeMonkPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_monk.png");
-        var gaugeMonkImage = this.PluginInterface.UiBuilder.LoadImage(gaugeMonkPath);
+        var gaugeMonkImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugeMonkPath)).Result;
         
         var gaugeNinjaPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_ninja.png");
-        var gaugeNinjaImage = this.PluginInterface.UiBuilder.LoadImage(gaugeNinjaPath);
+        var gaugeNinjaImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(gaugeNinjaPath)).Result;
 
         var progressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
-        var progressImage = this.PluginInterface.UiBuilder.LoadImage(progressPath);
+        var progressImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(progressPath)).Result;
         
         var tcjProgressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "tcj_progress.png");
-        var tcjProgressImage = this.PluginInterface.UiBuilder.LoadImage(tcjProgressPath);
+        var tcjProgressImage = textureProvider.CreateFromImageAsync(File.ReadAllBytes(tcjProgressPath)).Result;
 
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(

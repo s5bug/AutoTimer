@@ -2,6 +2,7 @@
 using System.Numerics;
 using AutoTimer.Game;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging.Internal;
 using Dalamud.Plugin.Services;

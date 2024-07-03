@@ -32,7 +32,7 @@ public class AutoTimerHooksListener : HooksListener {
     }
 
     public void HandleActionEffect1(uint actorId, ActionEffect1 actionEffect1) {
-        if (actorId == this.ClientState.LocalPlayer?.ObjectId) {
+        if (actorId == this.ClientState.LocalPlayer?.EntityId) {
             // AutoAttack Action from us
             if (actionEffect1.Header.EffectDisplayType == AbilityDisplayType.ShowActionName &&
                 this.AutoAttackActionIds.Contains(actionEffect1.Header.ActionId)) {

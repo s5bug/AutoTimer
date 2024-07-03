@@ -116,7 +116,7 @@ public class AutoCalculator {
             var im = InventoryManager.Instance();
             var eq = im->GetInventoryContainer(InventoryType.EquippedItems);
             var weap = eq->GetInventorySlot(0);
-            var iid = weap->ItemID;
+            var iid = weap->ItemId;
             var ms = this.DataManager.GetExcelSheet<Item>().GetRow(iid).Delayms;
             return TimeSpan.FromMilliseconds(ms);
         }
