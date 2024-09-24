@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using AutoTimer.Game;
 using Dalamud.Interface.Internal;
@@ -14,13 +14,14 @@ namespace AutoTimer.Windows;
 public class MainWindow : Window, IDisposable {
     public const uint MonkClassJobId = 20;
     public const uint NinjaClassJobId = 30;
-    
+
     private AutoTimerPlugin plugin;
     private IClientState clientState;
 
     private IDalamudTextureWrap GaugeImage;
     private IDalamudTextureWrap GaugeMonkImage;
     private IDalamudTextureWrap GaugeNinjaImage;
+    private IDalamudTextureWrap GaugeLabelImage;
     private IDalamudTextureWrap ProgressImage;
     private IDalamudTextureWrap TcjProgressImage;
 
@@ -30,6 +31,7 @@ public class MainWindow : Window, IDisposable {
         IDalamudTextureWrap gauge,
         IDalamudTextureWrap gaugeMonk,
         IDalamudTextureWrap gaugeNinja,
+        IDalamudTextureWrap gaugeLabel,
         IDalamudTextureWrap progress,
         IDalamudTextureWrap tcjProgress
     ) : base(
@@ -41,6 +43,7 @@ public class MainWindow : Window, IDisposable {
         this.GaugeImage = gauge;
         this.GaugeMonkImage = gaugeMonk;
         this.GaugeNinjaImage = gaugeNinja;
+        this.GaugeLabelImage = gaugeLabel;
         this.ProgressImage = progress;
         this.TcjProgressImage = tcjProgress;
     }
@@ -57,7 +60,6 @@ public class MainWindow : Window, IDisposable {
     }
 
     public void Dispose() {
-        
     }
 
     public override void Update() {
@@ -71,11 +73,11 @@ public class MainWindow : Window, IDisposable {
 
     private TimeSpan? tcjEndPrediction = null;
     private bool tcjTicked = false;
-    
+
     public override void Draw() {
         float fscale = (float) this.plugin.Configuration.Scale;
         var tsla = this.plugin.HooksListener.TimeSinceLastAuto();
-        
+
         // ImGui.Text($"Time since last auto: {tsla}");
         // ImGui.Text($"Lv1 Action: {this.Plugin.AutoCalculator.GetLv1Action()}");
         // ImGui.Text($"Skillspeed: {this.Plugin.AutoCalculator.GetAttribute(45)}");
@@ -88,7 +90,7 @@ public class MainWindow : Window, IDisposable {
         var td = this.plugin.AutoCalculator.GetAutoAttackDelay();
         if (td is { } autoAttackDelay) {
             double progress = Math.Min(1.0, tsla.Divide(autoAttackDelay));
-            
+
             if (this.plugin.HooksListener.HasTcjBuff() && this.plugin.HooksListener.TcjStart is null) {
                 this.plugin.HooksListener.TcjStart = tsla;
             }
@@ -103,6 +105,13 @@ public class MainWindow : Window, IDisposable {
             ImGui.Image(gaugeImage.ImGuiHandle,
                         new Vector2(gaugeImage.Width, gaugeImage.Height) * fscale);
 
+            // autoattack_gauge_label.png
+            if (this.plugin.Configuration.BarLabel) {
+                var gaugeLabelImage = this.GaugeLabelImage;
+                ImGui.SetCursorPos(backgroundPos);
+                ImGui.Image(gaugeLabelImage.ImGuiHandle,
+                        new Vector2(gaugeLabelImage.Width, gaugeLabelImage.Height) * fscale);
+            }
 
             var hasTcjBuff = this.plugin.HooksListener.HasTcjBuff();
             // If we're past our TCJ ending prediction and no longer have TCJ, reset tcjStart
@@ -112,18 +121,18 @@ public class MainWindow : Window, IDisposable {
             if (pastEp || earlyDisengage) {
                 this.plugin.HooksListener.TcjStart = null;
             }
-            
+
             if (this.plugin.HooksListener.TcjStart is { } tcjStart) {
                 if (tsla > autoAttackDelay) {
                     this.tcjTicked = true;
                 }
-                
+
                 // Possible times for the next auto are 0.25, 1.25, 2.25, etc
                 // Without Predictive TCJ, find the next auto after now (tsla)
                 //   nextAuto = floorSeconds(max(tsla, autoDelay) + 0.75s) + 0.25s
                 //   As soon as TCJ is entered:
                 //     The TCJ bar should be empty until (tsla > autoDelay)
-                //     Progress should be progress through 1s tick (progress between N.25 and (N+1).25) 
+                //     Progress should be progress through 1s tick (progress between N.25 and (N+1).25)
                 // Predictive TCJ restricts the next autos to the ones that happen 2.85s after TCJ is entered
                 //   Calculate tcjEnd as tcjStart + 2.85s
                 //   Calculate tcjEndAuto as floorSeconds(tcjEnd + 0.75s) + 0.25s
@@ -150,9 +159,9 @@ public class MainWindow : Window, IDisposable {
                                TimeSpan.FromSeconds(0.25);
                 }
                 this.tcjEndPrediction = nextAuto;
-                
+
                 double tcjTickProgress = Math.Min(1.0, 1.0 - Math.Min(1.0, (nextAuto - tsla).TotalSeconds / tickLength));
-                
+
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
                     this.TcjProgressImage.ImGuiHandle,
@@ -162,7 +171,7 @@ public class MainWindow : Window, IDisposable {
             else {
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
-                    this.ProgressImage.ImGuiHandle, 
+                    this.ProgressImage.ImGuiHandle,
                     new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height) * fscale,
                     new Vector2(0, 0), new Vector2((float) progress, 1));
 
@@ -171,7 +180,6 @@ public class MainWindow : Window, IDisposable {
                 this.tcjTicked = false;
             }
         }
-        
 
         // if (ImGui.Button("Show Settings")) {
         //     this.Plugin.DrawConfigUI();

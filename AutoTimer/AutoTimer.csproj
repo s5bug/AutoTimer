@@ -5,7 +5,7 @@
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>1.1.0.0</Version>
+        <Version>1.1.0.1</Version>
         <Description>A sample plugin.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
@@ -23,8 +23,11 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
         </Content>
-
         <Content Include="..\Data\autoattack_gauge_ninja.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\autoattack_gauge_label.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
         </Content>
