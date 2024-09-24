@@ -1,4 +1,4 @@
-﻿using Dalamud.Configuration;
+using Dalamud.Configuration;
 using Dalamud.Plugin;
 using System;
 
@@ -28,7 +28,7 @@ public class Configuration : IPluginConfiguration {
     public bool PredictiveTcj { get; set; } = true;
     public bool LockBar { get; set; } = true;
     public bool BarOpen { get; set; } = false;
-
+    public bool BarLabel { get; set; } = true;
     public double Scale { get; set; } = 1.0;
 
     // the below exist just to make saving less cumbersome

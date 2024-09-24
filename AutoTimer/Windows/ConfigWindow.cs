@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
@@ -16,7 +16,8 @@ public class ConfigWindow : Window, IDisposable {
         this.Configuration = plugin.Configuration;
     }
 
-    public void Dispose() { }
+    public void Dispose() {
+    }
 
     public override void Draw() {
         if (ImGui.BeginCombo("Bar Type", Configuration.BarTypeName(this.Configuration.BarTypeChoice))) {
@@ -55,6 +56,12 @@ public class ConfigWindow : Window, IDisposable {
         configValue = this.Configuration.LockBar;
         if (ImGui.Checkbox("Lock Bar", ref configValue)) {
             this.Configuration.LockBar = configValue;
+            this.Configuration.Save();
+        }
+
+        configValue = this.Configuration.BarLabel;
+        if (ImGui.Checkbox("Show \"Auto\" Bar Label", ref configValue)) {
+            this.Configuration.BarLabel = configValue;
             this.Configuration.Save();
         }
 

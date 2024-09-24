@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Command;
+using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
@@ -22,10 +22,10 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
 
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-    
+
     public AutoTimerHooksListener HooksListener { get; init; }
-    private Hooks Hooks { get; init;  }
-    
+    private Hooks Hooks { get; init; }
+
     public AutoCalculator AutoCalculator { get; init; }
 
     public AutoTimerPlugin(
@@ -57,12 +57,17 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         var gaugeImage =
             textureProvider.CreateFromImageAsync(File.OpenRead(gaugePath));
 
+        // autoattack_gauge_label.png
+        var gaugeLabelPath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge_label.png");
+        var gaugeLabelImage =
+            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeLabelPath));
+
         // TODO I need to make loading these images not completely terrible
         var gaugeMonkPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_monk.png");
         var gaugeMonkImage =
             textureProvider.CreateFromImageAsync(File.OpenRead(gaugeMonkPath));
-        
+
         var gaugeNinjaPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_ninja.png");
         var gaugeNinjaImage =
@@ -72,7 +77,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
         var progressImage =
             textureProvider.CreateFromImageAsync(File.OpenRead(progressPath));
-        
+
         var tcjProgressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "tcj_progress.png");
         var tcjProgressImage =
@@ -85,6 +90,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
             gaugeImage.Result,
             gaugeMonkImage.Result,
             gaugeNinjaImage.Result,
+            gaugeLabelImage.Result,
             progressImage.Result,
             tcjProgressImage.Result
             );
@@ -122,6 +128,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
                 this.Configuration.BarOpen = this.MainWindow.IsOpen;
                 this.Configuration.Save();
                 break;
+
             case "/autotimerconfig":
                 this.ConfigWindow.IsOpen = true;
                 this.ConfigWindow.BringToFront();
@@ -136,6 +143,4 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     public void DrawConfigUI() {
         ConfigWindow.IsOpen = true;
     }
-    
-    
 }
