@@ -30,6 +30,10 @@ public class Configuration : IPluginConfiguration {
     public bool BarOpen { get; set; } = false;
     public bool BarLabel { get; set; } = true;
     public double Scale { get; set; } = 1.0;
+    
+    public bool HideOutOfCombat { get; set; } = false;
+    public bool HideInCutscene { get; set; } = false;
+    public bool HideWhileOccupied { get; set; } = false;
 
     // the below exist just to make saving less cumbersome
     [NonSerialized]

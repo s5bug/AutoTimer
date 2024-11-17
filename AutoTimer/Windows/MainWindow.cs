@@ -62,6 +62,36 @@ public class MainWindow : Window, IDisposable {
     public void Dispose() {
     }
 
+    public override void PreOpenCheck() {
+        if (this.plugin.Configuration.BarOpen) {
+            var hiddenFromCondition = false;
+
+            if (this.plugin.Configuration.HideOutOfCombat && !Conditions.IsInCombat) {
+                hiddenFromCondition = true;
+            }
+            if (this.plugin.Configuration.HideInCutscene &&
+                (Conditions.IsWatchingCutscene || Conditions.IsWatchingCutscene78)) {
+                hiddenFromCondition = true;
+            }
+            if (this.plugin.Configuration.HideWhileOccupied && (Conditions.IsOccupied || Conditions.IsOccupied30 ||
+                                                                Conditions.IsOccupied33 || Conditions.IsOccupied38 ||
+                                                                Conditions.IsOccupied39 ||
+                                                                Conditions.IsOccupiedInEvent ||
+                                                                Conditions.IsOccupiedSummoningBell ||
+                                                                Conditions.IsOccupiedInQuestEvent ||
+                                                                Conditions.IsOccupiedInCutSceneEvent)) {
+                hiddenFromCondition = true;
+            }
+
+            if (hiddenFromCondition) {
+                this.IsOpen = false;
+            }
+            else {
+                this.IsOpen = true;
+            }
+        }
+    }
+
     public override void Update() {
         if (this.plugin.Configuration.LockBar) {
             this.Flags |= ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground;

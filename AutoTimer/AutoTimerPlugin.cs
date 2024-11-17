@@ -124,8 +124,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
     private void OnCommand(string command, string args) {
         switch (command) {
             case "/autotimer":
-                this.MainWindow.IsOpen = !this.MainWindow.IsOpen;
-                this.Configuration.BarOpen = this.MainWindow.IsOpen;
+                this.Configuration.BarOpen = !this.Configuration.BarOpen;
                 this.Configuration.Save();
                 break;
 

@@ -70,5 +70,23 @@ public class ConfigWindow : Window, IDisposable {
             this.Configuration.Scale = scaleValue;
             this.Configuration.Save();
         }
+        
+        var hideOutOfCombatValue = this.Configuration.HideOutOfCombat;
+        if (ImGui.Checkbox("Hide Out Of Combat", ref hideOutOfCombatValue)) {
+            this.Configuration.HideOutOfCombat = hideOutOfCombatValue;
+            this.Configuration.Save();
+        }
+        
+        var hideInCutsceneValue = this.Configuration.HideInCutscene;
+        if (ImGui.Checkbox("Hide In Cutscene", ref hideInCutsceneValue)) {
+            this.Configuration.HideInCutscene = hideInCutsceneValue;
+            this.Configuration.Save();
+        }
+        
+        var hideWhileOccupiedValue = this.Configuration.HideWhileOccupied;
+        if (ImGui.Checkbox("Hide While Occupied", ref hideWhileOccupiedValue)) {
+            this.Configuration.HideWhileOccupied = hideWhileOccupiedValue;
+            this.Configuration.Save();
+        }
     }
 }
