@@ -6,8 +6,8 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
-using Action = Lumina.Excel.GeneratedSheets.Action;
+using Lumina.Excel.Sheets;
+using Action = Lumina.Excel.Sheets.Action;
 
 namespace AutoTimer.Game;
 
@@ -35,7 +35,7 @@ public class AutoCalculator {
         foreach (Action a in this.DataManager.GetExcelSheet<Action>()) {
             if (a.ClassJobLevel == 1) {
                 var actionId = a.RowId;
-                var classId = a.ClassJob.Row;
+                var classId = a.ClassJob.RowId;
                 this.Lv1ActionCache[classId] = actionId;
             }
         }
@@ -69,7 +69,7 @@ public class AutoCalculator {
 
             byte level = this.ClientState.LocalPlayer.Level;
 
-            int speedStat = actionData.ActionCategory.Row switch {
+            int speedStat = actionData.ActionCategory.RowId switch {
                 // See CharacterPanelRefined Attributes
                 WeaponskillActionCategoryId => GetAttribute(SkillspeedAttributeId),
                 SpellActionCategoryId => GetAttribute(SpellspeedAttributeId)
@@ -90,14 +90,14 @@ public class AutoCalculator {
     }
 
     public uint? GetLv1Action() {
-        ClassJob? here = this.ClientState.LocalPlayer?.ClassJob.GameData;
+        ClassJob? here = this.ClientState.LocalPlayer?.ClassJob.ValueNullable;
 
         // Only allow single links like MNK -> PUG to prevent infinite loops
         uint steps = 0;
-        while (here != null && steps < 2) {
-            if (this.Lv1ActionCache.TryGetValue(here.RowId, out var action)) return action;
+        while (here is { } currentClass && steps < 2) {
+            if (this.Lv1ActionCache.TryGetValue(currentClass.RowId, out var action)) return action;
 
-            here = here.ClassJobParent.Value;
+            here = currentClass.ClassJobParent.ValueNullable;
             steps = steps + 1;
         }
 

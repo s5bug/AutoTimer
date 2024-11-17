@@ -50,7 +50,7 @@ public class MainWindow : Window, IDisposable {
 
     private IDalamudTextureWrap JobDependentGaugeImage() {
         if (this.clientState.LocalPlayer is { } localPlayer) {
-            return localPlayer.ClassJob.Id switch {
+            return localPlayer.ClassJob.RowId switch {
                 MonkClassJobId => this.GaugeMonkImage,
                 NinjaClassJobId => this.GaugeNinjaImage,
                 _ => this.GaugeImage

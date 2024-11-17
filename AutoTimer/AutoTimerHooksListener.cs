@@ -6,7 +6,7 @@ using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Logging.Internal;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using Action = Lumina.Excel.GeneratedSheets.Action;
+using Action = Lumina.Excel.Sheets.Action;
 
 namespace AutoTimer;
 
@@ -25,7 +25,7 @@ public class AutoTimerHooksListener : HooksListener {
 
         this.AutoAttackActionIds = new HashSet<uint>();
         foreach (var action in this.DataManager.GetExcelSheet<Action>()) {
-            if (action.ActionCategory.Row == AutoAttackActionCategoryId) {
+            if (action.ActionCategory.RowId == AutoAttackActionCategoryId) {
                 this.AutoAttackActionIds.Add(action.RowId);
             }
         }
