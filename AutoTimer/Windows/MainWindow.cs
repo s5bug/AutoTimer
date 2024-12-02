@@ -90,6 +90,9 @@ public class MainWindow : Window, IDisposable {
                 this.IsOpen = true;
             }
         }
+        else {
+            this.IsOpen = false;
+        }
     }
 
     public override void Update() {
