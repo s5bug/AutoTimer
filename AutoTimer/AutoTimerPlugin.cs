@@ -34,6 +34,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         ISigScanner sigScanner,
         IGameInteropProvider gameInteropProvider,
         IClientState clientState,
+        ICondition condition,
         IDataManager dataManager,
         IFramework framework,
         ITextureProvider textureProvider
@@ -87,6 +88,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         MainWindow = new MainWindow(
             this,
             clientState,
+            condition,
             gaugeImage.Result,
             gaugeMonkImage.Result,
             gaugeNinjaImage.Result,

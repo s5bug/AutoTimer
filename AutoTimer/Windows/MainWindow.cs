@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using AutoTimer.Game;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
@@ -17,6 +18,7 @@ public class MainWindow : Window, IDisposable {
 
     private AutoTimerPlugin plugin;
     private IClientState clientState;
+    private ICondition condition;
 
     private IDalamudTextureWrap GaugeImage;
     private IDalamudTextureWrap GaugeMonkImage;
@@ -28,6 +30,7 @@ public class MainWindow : Window, IDisposable {
     public MainWindow(
         AutoTimerPlugin plugin,
         IClientState clientState,
+        ICondition condition,
         IDalamudTextureWrap gauge,
         IDalamudTextureWrap gaugeMonk,
         IDalamudTextureWrap gaugeNinja,
@@ -39,6 +42,7 @@ public class MainWindow : Window, IDisposable {
                      ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.AlwaysAutoResize) {
         this.plugin = plugin;
         this.clientState = clientState;
+        this.condition = condition;
 
         this.GaugeImage = gauge;
         this.GaugeMonkImage = gaugeMonk;
@@ -66,20 +70,22 @@ public class MainWindow : Window, IDisposable {
         if (this.plugin.Configuration.BarOpen) {
             var hiddenFromCondition = false;
 
-            if (this.plugin.Configuration.HideOutOfCombat && !Conditions.IsInCombat) {
+            if (this.plugin.Configuration.HideOutOfCombat && !this.condition[ConditionFlag.InCombat]) {
                 hiddenFromCondition = true;
             }
             if (this.plugin.Configuration.HideInCutscene &&
-                (Conditions.IsWatchingCutscene || Conditions.IsWatchingCutscene78)) {
+                (this.condition[ConditionFlag.WatchingCutscene] || this.condition[ConditionFlag.WatchingCutscene78])) {
                 hiddenFromCondition = true;
             }
-            if (this.plugin.Configuration.HideWhileOccupied && (Conditions.IsOccupied || Conditions.IsOccupied30 ||
-                                                                Conditions.IsOccupied33 || Conditions.IsOccupied38 ||
-                                                                Conditions.IsOccupied39 ||
-                                                                Conditions.IsOccupiedInEvent ||
-                                                                Conditions.IsOccupiedSummoningBell ||
-                                                                Conditions.IsOccupiedInQuestEvent ||
-                                                                Conditions.IsOccupiedInCutSceneEvent)) {
+            if (this.plugin.Configuration.HideWhileOccupied && (this.condition[ConditionFlag.Occupied] ||
+                                                                this.condition[ConditionFlag.Occupied30] ||
+                                                                this.condition[ConditionFlag.Occupied33] ||
+                                                                this.condition[ConditionFlag.Occupied38] ||
+                                                                this.condition[ConditionFlag.Occupied39] ||
+                                                                this.condition[ConditionFlag.OccupiedInEvent] ||
+                                                                this.condition[ConditionFlag.OccupiedSummoningBell] ||
+                                                                this.condition[ConditionFlag.OccupiedInQuestEvent] ||
+                                                                this.condition[ConditionFlag.OccupiedInCutSceneEvent])) {
                 hiddenFromCondition = true;
             }
 
