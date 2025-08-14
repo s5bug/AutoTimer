@@ -69,12 +69,13 @@ public class AutoCalculator {
 
             byte level = this.ClientState.LocalPlayer.Level;
 
-            int speedStat = actionData.ActionCategory.RowId switch {
+            int? maybeSpeedStat = actionData.ActionCategory.RowId switch {
                 // See CharacterPanelRefined Attributes
                 WeaponskillActionCategoryId => GetAttribute(SkillspeedAttributeId),
-                SpellActionCategoryId => GetAttribute(SpellspeedAttributeId)
-                // `_ => return null` isn't valid in C# so I guess I'll just let an exception bubble up here
+                SpellActionCategoryId => GetAttribute(SpellspeedAttributeId),
+                _ => null
             };
+            if (maybeSpeedStat is not { } speedStat) return null;
             int baseSpeed = this.DataManager.GetExcelSheet<ParamGrow>().GetRow(level).BaseSpeed;
             int extraSpeed = speedStat - baseSpeed;
 

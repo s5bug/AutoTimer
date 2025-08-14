@@ -1,14 +1,10 @@
 using System;
 using System.Numerics;
-using AutoTimer.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Interface.Internal;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging.Internal;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace AutoTimer.Windows;
 
@@ -141,14 +137,14 @@ public class MainWindow : Window, IDisposable {
                 Configuration.BarType.AlwaysNinja => this.GaugeNinjaImage,
                 Configuration.BarType.JobDependent => JobDependentGaugeImage()
             };
-            ImGui.Image(gaugeImage.ImGuiHandle,
+            ImGui.Image(gaugeImage.Handle,
                         new Vector2(gaugeImage.Width, gaugeImage.Height) * fscale);
 
             // autoattack_gauge_label.png
             if (this.plugin.Configuration.BarLabel) {
                 var gaugeLabelImage = this.GaugeLabelImage;
                 ImGui.SetCursorPos(backgroundPos);
-                ImGui.Image(gaugeLabelImage.ImGuiHandle,
+                ImGui.Image(gaugeLabelImage.Handle,
                         new Vector2(gaugeLabelImage.Width, gaugeLabelImage.Height) * fscale);
             }
 
@@ -203,14 +199,14 @@ public class MainWindow : Window, IDisposable {
 
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
-                    this.TcjProgressImage.ImGuiHandle,
+                    this.TcjProgressImage.Handle,
                     new Vector2(this.TcjProgressImage.Width * (float) tcjTickProgress, this.TcjProgressImage.Height) * fscale,
                     new Vector2(0, 0), new Vector2((float) tcjTickProgress, 1));
             }
             else {
                 ImGui.SetCursorPos(backgroundPos);
                 ImGui.Image(
-                    this.ProgressImage.ImGuiHandle,
+                    this.ProgressImage.Handle,
                     new Vector2(this.ProgressImage.Width * (float) progress, this.ProgressImage.Height) * fscale,
                     new Vector2(0, 0), new Vector2((float) progress, 1));
 
