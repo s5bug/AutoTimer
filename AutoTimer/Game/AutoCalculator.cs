@@ -21,13 +21,15 @@ public class AutoCalculator {
     public const uint RiddleOfWindId = 2687;
     public const uint InspirationId = 3689;
 
-    private IClientState ClientState { get; init; }
+    private IPlayerState PlayerState { get; init; }
+    private IObjectTable ObjectTable { get; init; }
     private IDataManager DataManager { get; init; }
 
     private Dictionary<uint, uint> Lv1ActionCache { get; init; }
 
-    public AutoCalculator(IClientState clientState, IDataManager dataManager) {
-        this.ClientState = clientState;
+    public AutoCalculator(IPlayerState playerState, IObjectTable objectTable, IDataManager dataManager) {
+        this.PlayerState = playerState;
+        this.ObjectTable = objectTable;
         this.DataManager = dataManager;
 
         this.Lv1ActionCache = new();
@@ -58,7 +60,7 @@ public class AutoCalculator {
 
     public int GetAttribute(int attribute) {
         unsafe {
-            return PlayerState.Instance()->Attributes[attribute];
+            return FFXIVClientStructs.FFXIV.Client.Game.UI.PlayerState.Instance()->Attributes[attribute];
         }
     }
 
@@ -67,7 +69,7 @@ public class AutoCalculator {
         if (a is { } lv1Action) {
             var actionData = this.DataManager.GetExcelSheet<Action>().GetRow(lv1Action);
 
-            byte level = this.ClientState.LocalPlayer.Level;
+            uint level = (uint) this.PlayerState.Level;
 
             int? maybeSpeedStat = actionData.ActionCategory.RowId switch {
                 // See CharacterPanelRefined Attributes
@@ -91,7 +93,9 @@ public class AutoCalculator {
     }
 
     public uint? GetLv1Action() {
-        ClassJob? here = this.ClientState.LocalPlayer?.ClassJob.ValueNullable;
+        if (!this.PlayerState.IsLoaded) return null;
+        
+        ClassJob? here = this.PlayerState.ClassJob.ValueNullable;
 
         // Only allow single links like MNK -> PUG to prevent infinite loops
         uint steps = 0;
@@ -127,13 +131,13 @@ public class AutoCalculator {
     public TimeSpan? GetAutoAttackDelay() {
         float? bgcd = this.GetBaseGcd();
         float? cgcd = this.GetCurrentGcd();
-        if (bgcd is { } baseGcd && cgcd is { } currentGcd) {
+        if (bgcd is { } baseGcd && cgcd is { } currentGcd && this.ObjectTable.LocalPlayer is { } localPlayer) {
             TimeSpan normalDelay = this.GetWeaponDelay();
             float lengthMultiplier = currentGcd / baseGcd;
             
             // See if Riddle of Earth is applied and apply its auto haste
             // See if Inspiration is applied and undo its haste (a consequence of measuring Fire in Red for haste)
-            foreach (Dalamud.Game.ClientState.Statuses.Status status in this.ClientState.LocalPlayer.StatusList) {
+            foreach (Dalamud.Game.ClientState.Statuses.IStatus status in localPlayer.StatusList) {
                 if (status.StatusId == RiddleOfWindId) {
                     lengthMultiplier *= 0.5f;
                 }

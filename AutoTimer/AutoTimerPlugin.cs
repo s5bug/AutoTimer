@@ -33,7 +33,8 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         ICommandManager commandManager,
         ISigScanner sigScanner,
         IGameInteropProvider gameInteropProvider,
-        IClientState clientState,
+        IPlayerState playerState,
+        IObjectTable objectTable,
         ICondition condition,
         IDataManager dataManager,
         IFramework framework,
@@ -45,13 +46,13 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         this.Configuration.Initialize(this.PluginInterface);
 
-        this.HooksListener = new AutoTimerHooksListener(clientState, dataManager);
+        this.HooksListener = new AutoTimerHooksListener(playerState, objectTable, dataManager);
         this.Hooks = new Hooks(this.HooksListener, sigScanner, gameInteropProvider);
         this.Hooks.Enable();
 
         framework.Update += this.HooksListener.FrameworkUpdate;
 
-        this.AutoCalculator = new AutoCalculator(clientState, dataManager);
+        this.AutoCalculator = new AutoCalculator(playerState, objectTable, dataManager);
 
         // you might normally want to embed resources and load them from the manifest stream
         var gaugePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge.png");
@@ -87,7 +88,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(
             this,
-            clientState,
+            playerState,
             condition,
             gaugeImage.Result,
             gaugeMonkImage.Result,

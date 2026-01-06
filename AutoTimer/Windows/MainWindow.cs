@@ -13,7 +13,7 @@ public class MainWindow : Window, IDisposable {
     public const uint NinjaClassJobId = 30;
 
     private AutoTimerPlugin plugin;
-    private IClientState clientState;
+    private IPlayerState playerState;
     private ICondition condition;
 
     private IDalamudTextureWrap GaugeImage;
@@ -25,7 +25,7 @@ public class MainWindow : Window, IDisposable {
 
     public MainWindow(
         AutoTimerPlugin plugin,
-        IClientState clientState,
+        IPlayerState playerState,
         ICondition condition,
         IDalamudTextureWrap gauge,
         IDalamudTextureWrap gaugeMonk,
@@ -37,7 +37,7 @@ public class MainWindow : Window, IDisposable {
         "AutoTimer", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs |
                      ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.AlwaysAutoResize) {
         this.plugin = plugin;
-        this.clientState = clientState;
+        this.playerState = playerState;
         this.condition = condition;
 
         this.GaugeImage = gauge;
@@ -49,8 +49,8 @@ public class MainWindow : Window, IDisposable {
     }
 
     private IDalamudTextureWrap JobDependentGaugeImage() {
-        if (this.clientState.LocalPlayer is { } localPlayer) {
-            return localPlayer.ClassJob.RowId switch {
+        if (this.playerState.IsLoaded) {
+            return this.playerState.ClassJob.RowId switch {
                 MonkClassJobId => this.GaugeMonkImage,
                 NinjaClassJobId => this.GaugeNinjaImage,
                 _ => this.GaugeImage

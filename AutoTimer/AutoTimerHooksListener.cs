@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Logging.Internal;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Action = Lumina.Excel.Sheets.Action;
 
 namespace AutoTimer;
@@ -14,13 +15,15 @@ public class AutoTimerHooksListener : HooksListener {
     public const uint AutoAttackActionCategoryId = 1;
     public const uint TenChiJinStatusId = 1186;
     private Stopwatch AutoStopwatch { get; init; } = new();
-    private IClientState ClientState { get; init; }
+    private IPlayerState PlayerState { get; init; }
+    private IObjectTable ObjectTable { get; init; }
     private IDataManager DataManager { get; init; }
 
     private HashSet<uint> AutoAttackActionIds { get; init; }
 
-    public AutoTimerHooksListener(IClientState clientState, IDataManager dataManager) {
-        this.ClientState = clientState;
+    public AutoTimerHooksListener(IPlayerState playerState, IObjectTable objectTable, IDataManager dataManager) {
+        this.PlayerState = playerState;
+        this.ObjectTable = objectTable;
         this.DataManager = dataManager;
 
         this.AutoAttackActionIds = new HashSet<uint>();
@@ -32,7 +35,7 @@ public class AutoTimerHooksListener : HooksListener {
     }
 
     public void HandleActionEffect1(uint actorId, ActionEffect1 actionEffect1) {
-        if (actorId == this.ClientState.LocalPlayer?.EntityId) {
+        if (this.PlayerState.IsLoaded && actorId == this.PlayerState.EntityId) {
             // AutoAttack Action from us
             if (actionEffect1.Header.EffectDisplayType == AbilityDisplayType.ShowActionName &&
                 this.AutoAttackActionIds.Contains(actionEffect1.Header.ActionId)) {
@@ -51,7 +54,7 @@ public class AutoTimerHooksListener : HooksListener {
     public TimeSpan? TcjStart { get; set; }
 
     public bool HasTcjBuff() {
-        if (this.ClientState.LocalPlayer is { } localPlayer) {
+        if (this.ObjectTable.LocalPlayer is { } localPlayer) {
             foreach(var status in localPlayer.StatusList) {
                 if (status.StatusId == TenChiJinStatusId) {
                     return true;
@@ -62,7 +65,7 @@ public class AutoTimerHooksListener : HooksListener {
     }
 
     public void FrameworkUpdate(IFramework framework) {
-        if (this.ClientState.LocalPlayer is { } localPlayer) {
+        if (this.ObjectTable.LocalPlayer is { } localPlayer) {
             if (localPlayer.IsCasting && localPlayer.CurrentCastTime < (localPlayer.TotalCastTime - 0.5)) {
                 this.AutoStopwatch.Stop();
             }
