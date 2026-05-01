@@ -2,6 +2,8 @@ using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoTimer.Game;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
@@ -10,18 +12,21 @@ using Dalamud.Game;
 
 namespace AutoTimer;
 
-public sealed partial class AutoTimerPlugin : IDalamudPlugin {
+public sealed partial class AutoTimerPlugin : IAsyncDalamudPlugin {
     public string Name => "Auto Timer";
     private const string ToggleTimerCommand = "/autotimer";
     private const string ConfigTimerCommand = "/autotimerconfig";
 
     private IDalamudPluginInterface PluginInterface { get; init; }
     private ICommandManager CommandManager { get; init; }
+    private ITextureProvider TextureProvider { get; init; }
+    private IPlayerState PlayerState { get; init; }
+    private ICondition Condition { get; init; }
     public Configuration Configuration { get; init; }
     public WindowSystem WindowSystem = new("AutoTimer");
 
-    private ConfigWindow ConfigWindow { get; init; }
-    private MainWindow MainWindow { get; init; }
+    private ConfigWindow ConfigWindow { get; set; }
+    private MainWindow MainWindow { get; set; }
 
     public AutoTimerHooksListener HooksListener { get; init; }
     private Hooks Hooks { get; init; }
@@ -53,49 +58,55 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         framework.Update += this.HooksListener.FrameworkUpdate;
 
         this.AutoCalculator = new AutoCalculator(playerState, objectTable, dataManager);
+        
+        this.TextureProvider = textureProvider;
+        this.PlayerState = playerState;
+        this.Condition = condition;
+    }
 
+    public async Task LoadAsync(CancellationToken cancellationToken) {
         // you might normally want to embed resources and load them from the manifest stream
         var gaugePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge.png");
         var gaugeImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(gaugePath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(gaugePath), cancellationToken: cancellationToken);
 
         // autoattack_gauge_label.png
         var gaugeLabelPath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_gauge_label.png");
         var gaugeLabelImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeLabelPath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(gaugeLabelPath), cancellationToken: cancellationToken);
 
         // TODO I need to make loading these images not completely terrible
         var gaugeMonkPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_monk.png");
         var gaugeMonkImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeMonkPath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(gaugeMonkPath), cancellationToken: cancellationToken);
 
         var gaugeNinjaPath = Path.Combine(this.PluginInterface.AssemblyLocation.Directory?.FullName!,
                                          "autoattack_gauge_ninja.png");
         var gaugeNinjaImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(gaugeNinjaPath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(gaugeNinjaPath), cancellationToken: cancellationToken);
 
         var progressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "autoattack_progress.png");
         var progressImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(progressPath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(progressPath), cancellationToken: cancellationToken);
 
         var tcjProgressPath =
             Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "tcj_progress.png");
         var tcjProgressImage =
-            textureProvider.CreateFromImageAsync(File.OpenRead(tcjProgressPath));
+            this.TextureProvider.CreateFromImageAsync(File.OpenRead(tcjProgressPath), cancellationToken: cancellationToken);
 
-        ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(
+        this.ConfigWindow = new ConfigWindow(this);
+        this.MainWindow = new MainWindow(
             this,
-            playerState,
-            condition,
-            gaugeImage.Result,
-            gaugeMonkImage.Result,
-            gaugeNinjaImage.Result,
-            gaugeLabelImage.Result,
-            progressImage.Result,
-            tcjProgressImage.Result
+            this.PlayerState,
+            this.Condition,
+            await gaugeImage,
+            await gaugeMonkImage,
+            await gaugeNinjaImage,
+            await gaugeLabelImage,
+            await progressImage,
+            await tcjProgressImage
             );
 
         WindowSystem.AddWindow(ConfigWindow);
@@ -114,7 +125,7 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         this.MainWindow.IsOpen = this.Configuration.BarOpen;
     }
 
-    public void Dispose() {
+    public ValueTask DisposeAsync() {
         this.WindowSystem.RemoveAllWindows();
 
         ConfigWindow.Dispose();
@@ -122,6 +133,8 @@ public sealed partial class AutoTimerPlugin : IDalamudPlugin {
         this.Hooks.Dispose();
 
         this.CommandManager.RemoveHandler(ToggleTimerCommand);
+        
+        return ValueTask.CompletedTask;
     }
 
     private void OnCommand(string command, string args) {
